@@ -16650,7 +16650,7 @@ img {
   }
 }
 
-.skeleton-box {
+.skeleton {
   display: inline-block;
   height: 1em;
   position: relative;
@@ -16658,7 +16658,7 @@ img {
   background-color: #dddbdd;
 }
 
-.skeleton-box::after {
+.skeleton::after {
   position: absolute;
   top: 0;
   right: 0;
