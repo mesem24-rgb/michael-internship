@@ -21,17 +21,12 @@ const Author = () => {
       setLoading(true);
 
       try {
-        console.log("ROUTE AUTHOR ID:", authorId);
-
         let foundAuthor = null;
 
-        // 1) Try dedicated authors endpoint first
         try {
           const res = await axios.get(
             `https://us-central1-nft-cloud-functions.cloudfunctions.net/authors?id=${authorId}`
           );
-
-          console.log("AUTHORS API:", res.data);
 
           const authors = Array.isArray(res.data) ? res.data : [res.data];
 
@@ -40,10 +35,9 @@ const Author = () => {
               (entry) => String(entry?.authorId) === String(authorId)
             ) || null;
         } catch (err) {
-          console.log("authors endpoint failed, using fallback data");
+          console.log("authors endpoint failed, using fallback");
         }
 
-        // 2) Fallback: build author from item APIs
         const [exploreRes, newItemsRes, topSellersRes] = await Promise.allSettled([
           axios.get(
             "https://us-central1-nft-cloud-functions.cloudfunctions.net/explore"
@@ -71,10 +65,8 @@ const Author = () => {
             ? topSellersRes.value.data
             : [];
 
-        // Merge all NFT item sources you want shown on the author page
         const allItems = [...exploreItems, ...newItems];
 
-        // Match selected person as author OR creator OR owner
         const rawAuthorItems = allItems.filter((item) => {
           return (
             String(item.authorId) === String(authorId) ||
@@ -83,14 +75,11 @@ const Author = () => {
           );
         });
 
-        // Remove duplicates by nftId
         const uniqueAuthorItems = Array.from(
           new Map(
             rawAuthorItems.map((item) => [
               String(item.nftId),
-              {
-                ...item,
-              },
+              { ...item },
             ])
           ).values()
         );
@@ -105,7 +94,6 @@ const Author = () => {
               String(seller.ownerId) === String(authorId)
           ) || null;
 
-        // If authors endpoint did not return enough usable data, build it from matched NFT data
         if (!foundAuthor && (firstMatch || sellerMatch)) {
           foundAuthor = {
             authorId: Number(authorId),
@@ -115,6 +103,7 @@ const Author = () => {
               firstMatch?.creatorName ||
               firstMatch?.ownerName ||
               "Unknown Author",
+
             tag:
               sellerMatch?.authorName
                 ? sellerMatch.authorName.toLowerCase().replace(/\s+/g, "")
@@ -125,39 +114,87 @@ const Author = () => {
                 : firstMatch?.ownerName
                 ? firstMatch.ownerName.toLowerCase().replace(/\s+/g, "")
                 : `author${authorId}`,
+
             address:
+              sellerMatch?.address ||
+              sellerMatch?.walletAddress ||
+              sellerMatch?.wallet ||
+              sellerMatch?.authorAddress ||
+              sellerMatch?.authorWallet ||
               firstMatch?.address ||
+              firstMatch?.walletAddress ||
+              firstMatch?.wallet ||
+              firstMatch?.authorAddress ||
               firstMatch?.creatorAddress ||
               firstMatch?.ownerAddress ||
-              "Wallet address unavailable",
+              firstMatch?.authorWallet ||
+              firstMatch?.creatorWallet ||
+              firstMatch?.ownerWallet ||
+              "",
+
             authorImage:
               sellerMatch?.authorImage ||
               firstMatch?.authorImage ||
               firstMatch?.creatorImage ||
               firstMatch?.ownerImage ||
               "",
+
+            bannerImage:
+              sellerMatch?.bannerImage ||
+              firstMatch?.bannerImage ||
+              firstMatch?.nftImage ||
+              sellerMatch?.authorImage ||
+              firstMatch?.authorImage ||
+              "",
+
             followers: sellerMatch?.followers || 0,
             nftCollection: uniqueAuthorItems,
           };
         }
 
-        // If authors endpoint succeeded, still replace nftCollection with the full associated set
         if (foundAuthor) {
           foundAuthor = {
             ...foundAuthor,
             nftCollection: uniqueAuthorItems,
+
             authorImage:
               foundAuthor.authorImage ||
               firstMatch?.authorImage ||
               firstMatch?.creatorImage ||
               firstMatch?.ownerImage ||
               "",
+
+            bannerImage:
+              foundAuthor.bannerImage ||
+              foundAuthor.authorBanner ||
+              firstMatch?.bannerImage ||
+              firstMatch?.nftImage ||
+              foundAuthor.authorImage ||
+              AuthorBanner,
+
             authorName:
               foundAuthor.authorName ||
               firstMatch?.authorName ||
               firstMatch?.creatorName ||
               firstMatch?.ownerName ||
               "Unknown Author",
+
+            address:
+              foundAuthor.address ||
+              foundAuthor.walletAddress ||
+              foundAuthor.wallet ||
+              foundAuthor.authorAddress ||
+              foundAuthor.authorWallet ||
+              firstMatch?.address ||
+              firstMatch?.walletAddress ||
+              firstMatch?.wallet ||
+              firstMatch?.authorAddress ||
+              firstMatch?.creatorAddress ||
+              firstMatch?.ownerAddress ||
+              firstMatch?.authorWallet ||
+              firstMatch?.creatorWallet ||
+              firstMatch?.ownerWallet ||
+              "",
           };
         }
 
@@ -182,12 +219,11 @@ const Author = () => {
     } else {
       setFollowers((prev) => prev + 1);
     }
-
     setIsFollowing((prev) => !prev);
   };
 
   const copyWallet = () => {
-    if (author?.address && author.address !== "Wallet address unavailable") {
+    if (author?.address) {
       navigator.clipboard.writeText(author.address);
     }
   };
@@ -201,7 +237,12 @@ const Author = () => {
           id="profile_banner"
           aria-label="section"
           className="text-light"
-          style={{ background: `url(${AuthorBanner}) top` }}
+          style={{
+            backgroundImage: `url(${author?.bannerImage || AuthorBanner})`,
+            backgroundPosition: "top",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}
         ></section>
 
         <section aria-label="section">
@@ -269,17 +310,21 @@ const Author = () => {
                           <h4>
                             {author.authorName}
                             <span className="profile_username">@{author.tag}</span>
-                            <span id="wallet" className="profile_wallet">
-                              {author.address}
-                            </span>
-                            <button
-                              id="btn_copy"
-                              title="Copy Text"
-                              onClick={copyWallet}
-                              disabled={author.address === "Wallet address unavailable"}
-                            >
-                              Copy
-                            </button>
+
+                            {author.address && (
+                              <>
+                                <span id="wallet" className="profile_wallet">
+                                  {author.address}
+                                </span>
+                                <button
+                                  id="btn_copy"
+                                  title="Copy Text"
+                                  onClick={copyWallet}
+                                >
+                                  Copy
+                                </button>
+                              </>
+                            )}
                           </h4>
                         </div>
                       </div>
