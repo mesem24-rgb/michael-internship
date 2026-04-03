@@ -11,7 +11,33 @@ const ItemDetails = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+
+    const fetchItem = async () => {
+      try {
+        const res = await axios.get(
+          "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems",
+        );
+
+        const foundItem = res.data.find((i) => String(i.nftId) === String(id));
+
+        setItem(foundItem);
+      } catch (err) {
+        console.error("Error fetching item:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItem();
+  }, [id]);
+
+  if (loading) {
+    return <ItemSkeleton />;
+  }
+
+  if (!item) {
+    return <p style={{ textAlign: "center" }}>Item not found.</p>;
+  }
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -227,8 +253,7 @@ const ItemDetails = () => {
   return (
     <div id="wrapper">
       <div className="no-bottom no-top" id="content">
-        <div id="top"></div>
-        <section aria-label="section" className="mt90 sm-mt-0">
+        <section className="mt90 sm-mt-0">
           <div className="container">
             <div className="row">
               <div className="col-md-6 text-center">

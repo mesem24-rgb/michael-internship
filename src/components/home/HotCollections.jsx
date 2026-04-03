@@ -157,3 +157,5 @@ const CollectionCardSkeleton = () => (
 );
 
 export default HotCollections;
+
+          
