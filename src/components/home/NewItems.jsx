@@ -30,25 +30,38 @@ const NewItems = () => {
     fetchNewItems();
   }, []);
 
+  const Arrow = ({ onClick, direction }) => (
+    <div
+      onClick={onClick}
+      style={{
+        position: "absolute",
+        top: "50%",
+        transform: "translateY(-50%)",
+        [direction === "next" ? "right" : "left"]: "-25px",
+        zIndex: 10,
+        cursor: "pointer",
+        background: "rgba(0,0,0,0.6)",
+        color: "#fff",
+        borderRadius: "50%",
+        padding: "10px",
+      }}
+    >
+      {direction === "next" ? "▶" : "◀"}
+    </div>
+  );
+
   const settings = {
     dots: true,
     infinite: items.length > 4,
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
+    nextArrow: <Arrow direction="next" />,
+    prevArrow: <Arrow direction="prev" />,
     responsive: [
-      {
-        breakpoint: 1200,
-        settings: { slidesToShow: 3 },
-      },
-      {
-        breakpoint: 992,
-        settings: { slidesToShow: 2 },
-      },
-      {
-        breakpoint: 576,
-        settings: { slidesToShow: 1 },
-      },
+      { breakpoint: 1200, settings: { slidesToShow: 3 } },
+      { breakpoint: 992, settings: { slidesToShow: 2 } },
+      { breakpoint: 576, settings: { slidesToShow: 1 } },
     ],
   };
 
@@ -66,11 +79,14 @@ const NewItems = () => {
           <div className="col-lg-12">
             <Slider {...settings}>
               {loading
-                ? new Array(4).fill(0).map((_, index) => (
+                ? [...Array(4)].map((_, index) => (
                     <NewItemSkeleton key={index} />
                   ))
                 : items.map((item, index) => (
-                    <div key={item.nftId || item.nft_id || index}>
+                    <div
+                      key={item.nftId || item.nft_id || index}
+                      style={{ padding: "0 10px" }}
+                    >
                       <div className="nft__item">
                         <div className="author_list_pp">
                           <Link
@@ -140,7 +156,7 @@ const NewItems = () => {
 };
 
 const NewItemSkeleton = () => (
-  <div>
+  <div style={{ padding: "0 10px" }}>
     <div className="nft__item">
       <div className="author_list_pp">
         <div
