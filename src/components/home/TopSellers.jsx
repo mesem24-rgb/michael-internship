@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Skeleton from "../../components/Skeleton";
 
 const TopSellers = () => {
   const [sellers, setSellers] = useState([]);
@@ -44,32 +45,37 @@ const TopSellers = () => {
                     <TopSellerSkeleton key={index} />
                   ))
                 : sellers.map((seller, index) => (
-                    <li key={seller.authorId || seller.id || index}>
+                    <li key={seller.authorId || seller.author_id || seller.id || index}>
                       <div className="author_list_pp">
-                        <Link to={`/author/${seller.authorId}`}>
-                          <img
-                            className="lazy pp-author"
-                            src={seller.authorImage}
-                            alt={seller.authorName}
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                            }}
+                        <Link to={`/author/${seller.authorId || seller.author_id}`}>
+                          <div
                             style={{
                               width: "50px",
                               height: "50px",
-                              objectFit: "cover",
                               borderRadius: "50%",
+                              overflow: "hidden",
                             }}
-                          />
+                          >
+                            <Skeleton
+                              src={seller.authorImage || seller.author_image}
+                              alt={seller.authorName || "author"}
+                              className="lazy pp-author"
+                              wrapperStyle={{
+                                width: "50px",
+                                height: "50px",
+                                borderRadius: "50%",
+                              }}
+                            />
+                          </div>
                           <i className="fa fa-check"></i>
                         </Link>
                       </div>
 
                       <div className="author_list_info">
-                        <Link to={`/author/${seller.authorId}`}>
+                        <Link to={`/author/${seller.authorId || seller.author_id}`}>
                           {seller.authorName}
                         </Link>
-                        <span>{Number(seller.price).toFixed(1)} ETH</span>
+                        <span>{Number(seller.price || 0).toFixed(1)} ETH</span>
                       </div>
                     </li>
                   ))}

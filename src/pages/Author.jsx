@@ -3,6 +3,7 @@ import AuthorBanner from "../images/author_banner.jpg";
 import AuthorItems from "../components/author/AuthorItems";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import Skeleton from "../components/Skeleton";
 
 const Author = () => {
   const { authorId } = useParams();
@@ -38,30 +39,34 @@ const Author = () => {
           console.log("authors endpoint failed, using fallback");
         }
 
-        const [exploreRes, newItemsRes, topSellersRes] = await Promise.allSettled([
-          axios.get(
-            "https://us-central1-nft-cloud-functions.cloudfunctions.net/explore"
-          ),
-          axios.get(
-            "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems"
-          ),
-          axios.get(
-            "https://us-central1-nft-cloud-functions.cloudfunctions.net/topSellers"
-          ),
-        ]);
+        const [exploreRes, newItemsRes, topSellersRes] =
+          await Promise.allSettled([
+            axios.get(
+              "https://us-central1-nft-cloud-functions.cloudfunctions.net/explore"
+            ),
+            axios.get(
+              "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems"
+            ),
+            axios.get(
+              "https://us-central1-nft-cloud-functions.cloudfunctions.net/topSellers"
+            ),
+          ]);
 
         const exploreItems =
-          exploreRes.status === "fulfilled" && Array.isArray(exploreRes.value.data)
+          exploreRes.status === "fulfilled" &&
+          Array.isArray(exploreRes.value.data)
             ? exploreRes.value.data
             : [];
 
         const newItems =
-          newItemsRes.status === "fulfilled" && Array.isArray(newItemsRes.value.data)
+          newItemsRes.status === "fulfilled" &&
+          Array.isArray(newItemsRes.value.data)
             ? newItemsRes.value.data
             : [];
 
         const topSellers =
-          topSellersRes.status === "fulfilled" && Array.isArray(topSellersRes.value.data)
+          topSellersRes.status === "fulfilled" &&
+          Array.isArray(topSellersRes.value.data)
             ? topSellersRes.value.data
             : [];
 
@@ -103,7 +108,6 @@ const Author = () => {
               firstMatch?.creatorName ||
               firstMatch?.ownerName ||
               "Unknown Author",
-
             tag:
               sellerMatch?.authorName
                 ? sellerMatch.authorName.toLowerCase().replace(/\s+/g, "")
@@ -114,31 +118,16 @@ const Author = () => {
                 : firstMatch?.ownerName
                 ? firstMatch.ownerName.toLowerCase().replace(/\s+/g, "")
                 : `author${authorId}`,
-
             address:
               sellerMatch?.address ||
-              sellerMatch?.walletAddress ||
-              sellerMatch?.wallet ||
-              sellerMatch?.authorAddress ||
-              sellerMatch?.authorWallet ||
               firstMatch?.address ||
-              firstMatch?.walletAddress ||
-              firstMatch?.wallet ||
-              firstMatch?.authorAddress ||
-              firstMatch?.creatorAddress ||
-              firstMatch?.ownerAddress ||
-              firstMatch?.authorWallet ||
-              firstMatch?.creatorWallet ||
-              firstMatch?.ownerWallet ||
               "",
-
             authorImage:
               sellerMatch?.authorImage ||
               firstMatch?.authorImage ||
               firstMatch?.creatorImage ||
               firstMatch?.ownerImage ||
               "",
-
             bannerImage:
               sellerMatch?.bannerImage ||
               firstMatch?.bannerImage ||
@@ -146,7 +135,6 @@ const Author = () => {
               sellerMatch?.authorImage ||
               firstMatch?.authorImage ||
               "",
-
             followers: sellerMatch?.followers || 0,
             nftCollection: uniqueAuthorItems,
           };
@@ -156,45 +144,10 @@ const Author = () => {
           foundAuthor = {
             ...foundAuthor,
             nftCollection: uniqueAuthorItems,
-
-            authorImage:
-              foundAuthor.authorImage ||
-              firstMatch?.authorImage ||
-              firstMatch?.creatorImage ||
-              firstMatch?.ownerImage ||
-              "",
-
             bannerImage:
               foundAuthor.bannerImage ||
-              foundAuthor.authorBanner ||
-              firstMatch?.bannerImage ||
-              firstMatch?.nftImage ||
               foundAuthor.authorImage ||
               AuthorBanner,
-
-            authorName:
-              foundAuthor.authorName ||
-              firstMatch?.authorName ||
-              firstMatch?.creatorName ||
-              firstMatch?.ownerName ||
-              "Unknown Author",
-
-            address:
-              foundAuthor.address ||
-              foundAuthor.walletAddress ||
-              foundAuthor.wallet ||
-              foundAuthor.authorAddress ||
-              foundAuthor.authorWallet ||
-              firstMatch?.address ||
-              firstMatch?.walletAddress ||
-              firstMatch?.wallet ||
-              firstMatch?.authorAddress ||
-              firstMatch?.creatorAddress ||
-              firstMatch?.ownerAddress ||
-              firstMatch?.authorWallet ||
-              firstMatch?.creatorWallet ||
-              firstMatch?.ownerWallet ||
-              "",
           };
         }
 
@@ -214,11 +167,7 @@ const Author = () => {
   }, [authorId]);
 
   const handleFollowToggle = () => {
-    if (isFollowing) {
-      setFollowers((prev) => Math.max(prev - 1, 0));
-    } else {
-      setFollowers((prev) => prev + 1);
-    }
+    setFollowers((prev) => (isFollowing ? Math.max(prev - 1, 0) : prev + 1));
     setIsFollowing((prev) => !prev);
   };
 
@@ -235,17 +184,16 @@ const Author = () => {
 
         <section
           id="profile_banner"
-          aria-label="section"
           className="text-light"
           style={{
             backgroundImage: `url(${author?.bannerImage || AuthorBanner})`,
-            backgroundPosition: "top",
             backgroundSize: "cover",
+            backgroundPosition: "top",
             backgroundRepeat: "no-repeat",
           }}
         ></section>
 
-        <section aria-label="section">
+        <section>
           <div className="container">
             <div className="row">
               <div className="col-md-12">
@@ -294,16 +242,25 @@ const Author = () => {
                   <div className="d_profile de-flex">
                     <div className="de-flex-col">
                       <div className="profile_avatar">
-                        <img
-                          src={author.authorImage}
-                          alt={author.authorName}
+                        <div
                           style={{
                             width: "150px",
                             height: "150px",
-                            objectFit: "cover",
                             borderRadius: "50%",
+                            overflow: "hidden",
                           }}
-                        />
+                        >
+                          <Skeleton
+                            src={author.authorImage}
+                            alt={author.authorName}
+                            wrapperStyle={{
+                              width: "150px",
+                              height: "150px",
+                              borderRadius: "50%",
+                            }}
+                          />
+                        </div>
+
                         <i className="fa fa-check"></i>
 
                         <div className="profile_name">

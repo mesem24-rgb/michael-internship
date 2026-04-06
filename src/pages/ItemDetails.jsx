@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import EthImage from "../images/ethereum.svg";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import Skeleton from "../components/Skeleton";
 
 const ItemDetails = () => {
   const { nftId } = useParams();
@@ -18,7 +19,6 @@ const ItemDetails = () => {
       try {
         let foundItem = null;
 
-        // 1. Get explore data
         try {
           const exploreRes = await axios.get(
             "https://us-central1-nft-cloud-functions.cloudfunctions.net/explore"
@@ -30,13 +30,12 @@ const ItemDetails = () => {
 
           foundItem =
             exploreItems.find(
-              (entry) => String(entry.nftId) === String(nftId)
+              (entry) => String(entry.nftId || entry.nft_id) === String(nftId)
             ) || null;
         } catch (err) {
           console.error("Explore API failed:", err);
         }
 
-        // 2. Get detailed item data
         try {
           const detailRes = await axios.get(
             `https://us-central1-nft-cloud-functions.cloudfunctions.net/itemDetails?nftId=${nftId}`
@@ -48,7 +47,7 @@ const ItemDetails = () => {
 
           const matchedDetail =
             detailData.find(
-              (entry) => String(entry?.nftId) === String(nftId)
+              (entry) => String(entry?.nftId || entry?.nft_id) === String(nftId)
             ) || null;
 
           if (matchedDetail) {
@@ -72,9 +71,41 @@ const ItemDetails = () => {
     }
   }, [nftId]);
 
-  // ✅ Loading UI (no missing component)
   if (loading) {
-    return <div style={{ textAlign: "center", marginTop: "100px" }}>Loading...</div>;
+    return (
+      <div id="wrapper">
+        <div className="no-bottom no-top" id="content">
+          <section className="mt90 sm-mt-0">
+            <div className="container">
+              <div className="row">
+                <div className="col-md-6">
+                  <div
+                    className="skeleton skeleton-img"
+                    style={{
+                      width: "100%",
+                      height: "500px",
+                      borderRadius: "12px",
+                    }}
+                  ></div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="skeleton skeleton-text short mb-3"></div>
+                  <div className="skeleton skeleton-text mb-2"></div>
+                  <div className="skeleton skeleton-text mb-4"></div>
+
+                  <div className="skeleton skeleton-text short mb-2"></div>
+                  <div className="skeleton skeleton-text short mb-4"></div>
+
+                  <div className="skeleton skeleton-text short mb-2"></div>
+                  <div className="skeleton skeleton-text short"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
   }
 
   if (!item) {
@@ -88,13 +119,11 @@ const ItemDetails = () => {
           <div className="container">
             <div className="row">
               <div className="col-md-6 text-center">
-                <img
-                  src={item.nftImage}
+                <Skeleton
+                  src={item.nftImage || item.nft_image}
                   alt={item.title}
-                  style={{
-                    width: "100%",
-                    maxHeight: "600px",
-                    objectFit: "cover",
+                  wrapperStyle={{
+                    height: "600px",
                     borderRadius: "12px",
                   }}
                 />
@@ -112,22 +141,86 @@ const ItemDetails = () => {
                     <span>{Number(item.price || 0).toFixed(2)}</span>
                   </div>
 
-                  {/* Owner */}
-                  {item.ownerName && (
-                    <div style={{ marginTop: "20px" }}>
+                  {(item.ownerName || item.owner_name) && (
+                    <div style={{ marginTop: "30px" }}>
                       <h6>Owner</h6>
-                      <Link to={`/author/${item.ownerId}`}>
-                        {item.ownerName}
+                      <Link
+                        to={`/author/${item.ownerId || item.owner_id}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                            overflow: "hidden",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Skeleton
+                            src={
+                              item.ownerImage ||
+                              item.owner_image ||
+                              item.authorImage ||
+                              item.author_image
+                            }
+                            alt={item.ownerName || item.owner_name || "owner"}
+                            className="pp-author"
+                            wrapperStyle={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "50%",
+                            }}
+                          />
+                        </div>
+                        <span>{item.ownerName || item.owner_name}</span>
                       </Link>
                     </div>
                   )}
 
-                  {/* Creator */}
-                  {item.creatorName && (
+                  {(item.creatorName || item.creator_name) && (
                     <div style={{ marginTop: "20px" }}>
                       <h6>Creator</h6>
-                      <Link to={`/author/${item.creatorId}`}>
-                        {item.creatorName}
+                      <Link
+                        to={`/author/${item.creatorId || item.creator_id}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                            overflow: "hidden",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Skeleton
+                            src={
+                              item.creatorImage ||
+                              item.creator_image ||
+                              item.authorImage ||
+                              item.author_image
+                            }
+                            alt={item.creatorName || item.creator_name || "creator"}
+                            className="pp-author"
+                            wrapperStyle={{
+                              width: "50px",
+                              height: "50px",
+                              borderRadius: "50%",
+                            }}
+                          />
+                        </div>
+                        <span>{item.creatorName || item.creator_name}</span>
                       </Link>
                     </div>
                   )}

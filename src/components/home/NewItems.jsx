@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Slider from "react-slick";
+import Skeleton from "../../components/Skeleton";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -29,10 +30,9 @@ const NewItems = () => {
     fetchNewItems();
   }, []);
 
-  // ✅ ONLY ONE SETTINGS OBJECT
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: items.length > 4,
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
@@ -69,42 +69,58 @@ const NewItems = () => {
                 ? new Array(4).fill(0).map((_, index) => (
                     <NewItemSkeleton key={index} />
                   ))
-                : items.map((item) => (
-                    <div key={item.nftId}>
+                : items.map((item, index) => (
+                    <div key={item.nftId || item.nft_id || index}>
                       <div className="nft__item">
-                        {/* AUTHOR */}
                         <div className="author_list_pp">
                           <Link
-                            to={`/author/${item.authorId}`}
+                            to={`/author/${item.authorId || item.author_id}`}
                             title={`Creator: ${item.authorName || "Unknown"}`}
                           >
-                            <img
-                              src={item.authorImage}
-                              alt={item.authorName}
-                            />
+                            <div
+                              style={{
+                                width: "50px",
+                                height: "50px",
+                                borderRadius: "50%",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <Skeleton
+                                src={item.authorImage || item.author_image}
+                                alt={item.authorName || "author"}
+                                className="lazy pp-author"
+                                wrapperStyle={{
+                                  width: "50px",
+                                  height: "50px",
+                                  borderRadius: "50%",
+                                }}
+                              />
+                            </div>
                             <i className="fa fa-check"></i>
                           </Link>
                         </div>
 
-                        {/* IMAGE */}
                         <div className="nft__item_wrap">
-                          <Link to={`/item-details/${item.nftId}`}>
-                            <img
-                              src={item.nftImage}
-                              className="nft__item_preview"
+                          <Link to={`/item-details/${item.nftId || item.nft_id}`}>
+                            <Skeleton
+                              src={item.nftImage || item.nft_image}
                               alt={item.title}
+                              className="nft__item_preview"
+                              wrapperStyle={{
+                                height: "280px",
+                                borderRadius: "8px",
+                              }}
                             />
                           </Link>
                         </div>
 
-                        {/* INFO */}
                         <div className="nft__item_info">
-                          <Link to={`/item-details/${item.nftId}`}>
+                          <Link to={`/item-details/${item.nftId || item.nft_id}`}>
                             <h4>{item.title}</h4>
                           </Link>
 
                           <div className="nft__item_price">
-                            {item.price || "0.00 ETH"}
+                            {Number(item.price || 0).toFixed(2)} ETH
                           </div>
 
                           <div className="nft__item_like">
@@ -127,16 +143,36 @@ const NewItemSkeleton = () => (
   <div>
     <div className="nft__item">
       <div className="author_list_pp">
-        <div className="skeleton skeleton-circle"></div>
+        <div
+          className="skeleton skeleton-circle"
+          style={{
+            width: "50px",
+            height: "50px",
+            borderRadius: "50%",
+          }}
+        ></div>
       </div>
 
       <div className="nft__item_wrap">
-        <div className="skeleton skeleton-img"></div>
+        <div
+          className="skeleton skeleton-img"
+          style={{
+            width: "100%",
+            height: "280px",
+            borderRadius: "8px",
+          }}
+        ></div>
       </div>
 
       <div className="nft__item_info">
-        <div className="skeleton skeleton-text short"></div>
-        <div className="skeleton skeleton-text"></div>
+        <div
+          className="skeleton skeleton-text short"
+          style={{ marginBottom: "10px" }}
+        ></div>
+        <div
+          className="skeleton skeleton-text"
+          style={{ marginBottom: "10px" }}
+        ></div>
         <div className="skeleton skeleton-text"></div>
       </div>
     </div>

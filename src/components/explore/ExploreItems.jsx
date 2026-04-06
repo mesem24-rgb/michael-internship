@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Skeleton from "../../components/Skeleton";
 
-const ExploreItems = ({ items, loading }) => {
+const ExploreItems = ({ items = [], loading = false }) => {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -36,7 +37,6 @@ const ExploreItems = ({ items, loading }) => {
   if (loading) {
     return (
       <>
-      
         {[...Array(8)].map((_, index) => (
           <div
             className="col-lg-3 col-md-6 col-sm-6 col-xs-12 mb-4"
@@ -107,27 +107,35 @@ const ExploreItems = ({ items, loading }) => {
         return (
           <div
             className="col-lg-3 col-md-6 col-sm-6 col-xs-12 mb-4"
-            key={item.nftId || item.id || index}
+            key={item.nftId || item.nft_id || item.id || index}
           >
             <div className="nft__item">
               <div className="author_list_pp">
                 <Link
-                  to={`/author/${item.authorId}`}
+                  to={`/author/${item.authorId || item.author_id}`}
                   data-bs-toggle="tooltip"
                   data-bs-placement="top"
                   title={`Creator: ${item.title}`}
                 >
-                  <img
-                    className="lazy pp-author"
-                    src={item.authorImage}
-                    alt="author"
+                  <div
                     style={{
                       width: "50px",
                       height: "50px",
-                      objectFit: "cover",
                       borderRadius: "50%",
+                      overflow: "hidden",
                     }}
-                  />
+                  >
+                    <Skeleton
+                      src={item.authorImage || item.author_image}
+                      alt="author"
+                      className="lazy pp-author"
+                      wrapperStyle={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </div>
                   <i className="fa fa-check"></i>
                 </Link>
               </div>
@@ -154,16 +162,13 @@ const ExploreItems = ({ items, loading }) => {
                   </div>
                 </div>
 
-                <Link to={`/item-details/${item.nftId}`}>
-                  <img
-                    src={item.nftImage}
-                    className="lazy nft__item_preview"
+                <Link to={`/item-details/${item.nftId || item.nft_id}`}>
+                  <Skeleton
+                    src={item.nftImage || item.nft_image}
                     alt={item.title}
-                    style={{
-                      width: "100%",
+                    className="lazy nft__item_preview"
+                    wrapperStyle={{
                       height: "280px",
-                      objectFit: "cover",
-                      display: "block",
                       borderRadius: "8px",
                     }}
                   />
@@ -171,7 +176,7 @@ const ExploreItems = ({ items, loading }) => {
               </div>
 
               <div className="nft__item_info">
-                <Link to={`/item-details/${item.nftId}`}>
+                <Link to={`/item-details/${item.nftId || item.nft_id}`}>
                   <h4>{item.title}</h4>
                 </Link>
 

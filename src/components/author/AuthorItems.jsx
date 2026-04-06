@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import Skeleton from "../../components/Skeleton";
 
 const AuthorItems = ({ items = [], loading = false }) => {
   const [activeTab, setActiveTab] = useState("all");
@@ -99,16 +100,13 @@ const AuthorItems = ({ items = [], loading = false }) => {
               >
                 <div className="nft__item">
                   <div className="nft__item_wrap">
-                    <Link to={`/item-details/${item.nftId}`}>
-                      <img
-                        src={item.nftImage}
-                        className="lazy nft__item_preview"
+                    <Link to={`/item-details/${item.nftId || item.nft_id}`}>
+                      <Skeleton
+                        src={item.nftImage || item.nft_image}
                         alt={item.title}
-                        style={{
-                          width: "100%",
+                        className="lazy nft__item_preview"
+                        wrapperStyle={{
                           height: "280px",
-                          objectFit: "cover",
-                          display: "block",
                           borderRadius: "8px",
                         }}
                       />
@@ -116,7 +114,7 @@ const AuthorItems = ({ items = [], loading = false }) => {
                   </div>
 
                   <div className="nft__item_info">
-                    <Link to={`/item-details/${item.nftId}`}>
+                    <Link to={`/item-details/${item.nftId || item.nft_id}`}>
                       <h4>{item.title}</h4>
                     </Link>
 

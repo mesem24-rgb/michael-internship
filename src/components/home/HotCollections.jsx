@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Slider from "react-slick";
-import Skeleton from "../../common/Skeleton";
+import Skeleton from "../../components/Skeleton";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -15,11 +15,10 @@ const HotCollections = () => {
     const fetchCollections = async () => {
       try {
         const res = await axios.get(
-          "https://us-central1-nft-cloud-functions.cloudfunctions.net/hotCollections",
+          "https://us-central1-nft-cloud-functions.cloudfunctions.net/hotCollections"
         );
 
-        console.log("API DATA:", res.data); // ✅ debug
-
+        console.log("API DATA:", res.data);
         setCollections(res.data);
       } catch (err) {
         console.error("Error fetching collections:", err);
@@ -31,7 +30,6 @@ const HotCollections = () => {
     fetchCollections();
   }, []);
 
-  // 🔥 arrows
   const Arrow = ({ onClick, direction }) => (
     <div
       onClick={onClick}
@@ -79,50 +77,44 @@ const HotCollections = () => {
           {loading
             ? [...Array(4)].map((_, i) => <CollectionCardSkeleton key={i} />)
             : collections.map((item, index) => (
-
-                <div key={item.nft_id || item.nftId || index} style={{ padding: "0 10px" }}>
-                  <div className="nft_coll" style={{ positions: "relative" }}>
-                    {/* NFT IMAGE */}
+                <div
+                  key={item.nft_id || item.nftId || index}
+                  style={{ padding: "0 10px" }}
+                >
+                  <div className="nft_coll" style={{ position: "relative" }}>
                     <div className="nft_wrap">
-                      <img
+                      <Skeleton
                         src={item.nft_image || item.nftImage}
                         alt={item.title}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
+                        className="nft__img"
                       />
                     </div>
 
-                    {/* AUTHOR */}
                     <div className="nft_coll_pp">
                       <Link to={`/author/${item.author_id || item.authorId}`}>
-                        <img
-        src={item.author_image || item.authorImage}
-        alt="author"
-        style={{
-          position: "absolute",
-          bottom: "4px",   
-          left: "15px",
-          width: "50px",
-          height: "50px",
-          borderRadius: "50%",
-          border: "3px solid #fff",
-          objectFit: "cover",
-          background: "#fff",
-        }}
-      />
-                        <Skeleton
-                          src={item.authorImage}
-                          alt="author"
-                          className="pp-coll"
-                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "4px",
+                            left: "15px",
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                            overflow: "hidden",
+                            border: "3px solid #fff",
+                            background: "#fff",
+                          }}
+                        >
+                          <Skeleton
+                            src={item.author_image || item.authorImage}
+                            alt="author"
+                            className="pp-coll"
+                          />
+                        </div>
                       </Link>
                       <i className="fa fa-check"></i>
                     </div>
 
-                    {/* INFO */}
                     <div className="nft_coll_info">
                       <h4>{item.title}</h4>
                       <span>ERC-{item.code}</span>
@@ -136,7 +128,6 @@ const HotCollections = () => {
   );
 };
 
-// 🔥 skeleton card
 const CollectionCardSkeleton = () => (
   <div style={{ padding: "0 10px" }}>
     <div className="nft_coll">
