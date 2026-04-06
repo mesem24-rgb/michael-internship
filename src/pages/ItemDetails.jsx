@@ -13,40 +13,12 @@ const ItemDetails = () => {
     window.scrollTo(0, 0);
 
     const fetchItem = async () => {
-      try {
-        const res = await axios.get(
-          "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems",
-        );
-
-        const foundItem = res.data.find((i) => String(i.nftId) === String(id));
-
-        setItem(foundItem);
-      } catch (err) {
-        console.error("Error fetching item:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchItem();
-  }, [id]);
-
-  if (loading) {
-    return <ItemSkeleton />;
-  }
-
-  if (!item) {
-    return <p style={{ textAlign: "center" }}>Item not found.</p>;
-  }
-
-  useEffect(() => {
-    const fetchItem = async () => {
       setLoading(true);
 
       try {
         let foundItem = null;
 
-        // 1. Pull from explore API first (this is already working in your app)
+        // 1. Get explore data
         try {
           const exploreRes = await axios.get(
             "https://us-central1-nft-cloud-functions.cloudfunctions.net/explore"
@@ -64,35 +36,23 @@ const ItemDetails = () => {
           console.error("Explore API failed:", err);
         }
 
-        // 2. Try itemDetails API for richer owner/creator fields
+        // 2. Get detailed item data
         try {
-          const detailUrls = [
-            `https://us-central1-nft-cloud-functions.cloudfunctions.net/itemDetails?nftId=${nftId}`,
-            `https://us-central1-nft-cloud-functions.cloudfunctions.net/itemDetails?id=${nftId}`,
-            `https://us-central1-nft-cloud-functions.cloudfunctions.net/itemDetails/${nftId}`,
-            "https://us-central1-nft-cloud-functions.cloudfunctions.net/itemDetails",
-          ];
+          const detailRes = await axios.get(
+            `https://us-central1-nft-cloud-functions.cloudfunctions.net/itemDetails?nftId=${nftId}`
+          );
 
-          for (const url of detailUrls) {
-            try {
-              const detailRes = await axios.get(url);
-              const detailData = Array.isArray(detailRes.data)
-                ? detailRes.data
-                : [detailRes.data];
+          const detailData = Array.isArray(detailRes.data)
+            ? detailRes.data
+            : [detailRes.data];
 
-              const matchedDetail =
-                detailData.find(
-                  (entry) => String(entry?.nftId) === String(nftId)
-                ) || null;
+          const matchedDetail =
+            detailData.find(
+              (entry) => String(entry?.nftId) === String(nftId)
+            ) || null;
 
-              if (matchedDetail) {
-                // Merge detail fields on top of explore item if both exist
-                foundItem = { ...foundItem, ...matchedDetail };
-                break;
-              }
-            } catch (innerErr) {
-              console.log("Item details URL failed:", url);
-            }
+          if (matchedDetail) {
+            foundItem = { ...foundItem, ...matchedDetail };
           }
         } catch (err) {
           console.error("ItemDetails API failed:", err);
@@ -112,142 +72,13 @@ const ItemDetails = () => {
     }
   }, [nftId]);
 
+  // ✅ Loading UI (no missing component)
   if (loading) {
-    return (
-      <div id="wrapper">
-        <div className="no-bottom no-top" id="content">
-          <div id="top"></div>
-          <section aria-label="section" className="mt90 sm-mt-0">
-            <div className="container">
-              <div className="row">
-                <div className="col-md-6 text-center">
-                  <div
-                    className="skeleton skeleton-img"
-                    style={{
-                      width: "100%",
-                      height: "500px",
-                      borderRadius: "12px",
-                    }}
-                  ></div>
-                </div>
-
-                <div className="col-md-6">
-                  <div className="item_info">
-                    <div
-                      className="skeleton skeleton-text short"
-                      style={{
-                        width: "260px",
-                        height: "32px",
-                        marginBottom: "20px",
-                      }}
-                    ></div>
-
-                    <div className="item_info_counts">
-                      <div
-                        className="skeleton skeleton-text"
-                        style={{
-                          width: "80px",
-                          height: "18px",
-                          marginRight: "12px",
-                        }}
-                      ></div>
-                      <div
-                        className="skeleton skeleton-text"
-                        style={{
-                          width: "80px",
-                          height: "18px",
-                        }}
-                      ></div>
-                    </div>
-
-                    <div style={{ marginTop: "20px" }}>
-                      <div
-                        className="skeleton skeleton-text"
-                        style={{
-                          width: "100%",
-                          height: "18px",
-                          marginBottom: "10px",
-                        }}
-                      ></div>
-                      <div
-                        className="skeleton skeleton-text"
-                        style={{
-                          width: "92%",
-                          height: "18px",
-                          marginBottom: "10px",
-                        }}
-                      ></div>
-                      <div
-                        className="skeleton skeleton-text"
-                        style={{
-                          width: "84%",
-                          height: "18px",
-                          marginBottom: "10px",
-                        }}
-                      ></div>
-                    </div>
-
-                    <div style={{ marginTop: "24px" }}>
-                      <div
-                        className="skeleton skeleton-text short"
-                        style={{
-                          width: "60px",
-                          height: "18px",
-                          marginBottom: "12px",
-                        }}
-                      ></div>
-                      <div className="item_author">
-                        <div
-                          className="skeleton skeleton-circle"
-                          style={{
-                            width: "50px",
-                            height: "50px",
-                            borderRadius: "50%",
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="spacer-40"></div>
-
-                    <div
-                      className="skeleton skeleton-text short"
-                      style={{
-                        width: "60px",
-                        height: "18px",
-                        marginBottom: "12px",
-                      }}
-                    ></div>
-                    <div
-                      className="skeleton skeleton-text"
-                      style={{
-                        width: "120px",
-                        height: "28px",
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
-    );
+    return <div style={{ textAlign: "center", marginTop: "100px" }}>Loading...</div>;
   }
 
   if (!item) {
-    return (
-      <div id="wrapper">
-        <div className="no-bottom no-top" id="content">
-          <div id="top"></div>
-          <section aria-label="section" className="mt90 sm-mt-0">
-            <div className="container text-center">
-              <h3>Item not found</h3>
-            </div>
-          </section>
-        </div>
-      </div>
-    );
+    return <div style={{ textAlign: "center" }}>Item not found</div>;
   }
 
   return (
@@ -259,7 +90,6 @@ const ItemDetails = () => {
               <div className="col-md-6 text-center">
                 <img
                   src={item.nftImage}
-                  className="img-fluid img-rounded mb-sm-30 nft-image"
                   alt={item.title}
                   style={{
                     width: "100%",
@@ -272,125 +102,35 @@ const ItemDetails = () => {
 
               <div className="col-md-6">
                 <div className="item_info">
-                  <h2>
-                    {item.title}
-                    {item.tag !== undefined && item.tag !== null
-                      ? ` #${item.tag}`
-                      : ""}
-                  </h2>
-
-                  <div className="item_info_counts">
-                    {item.views !== undefined && item.views !== null && (
-                      <div className="item_info_views">
-                        <i className="fa fa-eye"></i>
-                        {item.views}
-                      </div>
-                    )}
-
-                    {item.likes !== undefined && item.likes !== null && (
-                      <div className="item_info_like">
-                        <i className="fa fa-heart"></i>
-                        {item.likes}
-                      </div>
-                    )}
-                  </div>
+                  <h2>{item.title}</h2>
 
                   <p>{item.description || "No description available."}</p>
-
-                  <div>
-                    {(item.ownerName || item.ownerImage || item.ownerId) && (
-                      <div style={{ marginBottom: "20px" }}>
-                        <h6>Owner</h6>
-                        <div className="item_author">
-                          <div className="author_list_pp">
-                            <Link to={`/author/${item.ownerId}`}>
-                              <img
-                                className="lazy"
-                                src={item.ownerImage}
-                                alt={item.ownerName || "Owner"}
-                                style={{
-                                  width: "50px",
-                                  height: "50px",
-                                  borderRadius: "50%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                              <i className="fa fa-check"></i>
-                            </Link>
-                          </div>
-                          <div className="author_list_info">
-                            <Link to={`/author/${item.ownerId}`}>
-                              {item.ownerName || "Unknown Owner"}
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {(item.creatorName || item.creatorImage || item.creatorId) && (
-                      <div style={{ marginBottom: "20px" }}>
-                        <h6>Creator</h6>
-                        <div className="item_author">
-                          <div className="author_list_pp">
-                            <Link to={`/author/${item.creatorId}`}>
-                              <img
-                                className="lazy"
-                                src={item.creatorImage}
-                                alt={item.creatorName || "Creator"}
-                                style={{
-                                  width: "50px",
-                                  height: "50px",
-                                  borderRadius: "50%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                              <i className="fa fa-check"></i>
-                            </Link>
-                          </div>
-                          <div className="author_list_info">
-                            <Link to={`/author/${item.creatorId}`}>
-                              {item.creatorName || "Unknown Creator"}
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {!item.ownerName && !item.creatorName && item.authorId && (
-                      <div style={{ marginBottom: "20px" }}>
-                        <h6>Author</h6>
-                        <div className="item_author">
-                          <div className="author_list_pp">
-                            <Link to={`/author/${item.authorId}`}>
-                              <img
-                                className="lazy"
-                                src={item.authorImage}
-                                alt="Author"
-                                style={{
-                                  width: "50px",
-                                  height: "50px",
-                                  borderRadius: "50%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                              <i className="fa fa-check"></i>
-                            </Link>
-                          </div>
-                          <div className="author_list_info">
-                            <Link to={`/author/${item.authorId}`}>View Author</Link>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="spacer-40"></div>
 
                   <h6>Price</h6>
                   <div className="nft-item-price">
                     <img src={EthImage} alt="ETH" />
                     <span>{Number(item.price || 0).toFixed(2)}</span>
                   </div>
+
+                  {/* Owner */}
+                  {item.ownerName && (
+                    <div style={{ marginTop: "20px" }}>
+                      <h6>Owner</h6>
+                      <Link to={`/author/${item.ownerId}`}>
+                        {item.ownerName}
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Creator */}
+                  {item.creatorName && (
+                    <div style={{ marginTop: "20px" }}>
+                      <h6>Creator</h6>
+                      <Link to={`/author/${item.creatorId}`}>
+                        {item.creatorName}
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
